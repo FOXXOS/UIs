@@ -7038,10 +7038,24 @@ end
             TextColor3 = "FontColor",
             Text = function()
                 local footerText = WindowInfo.Footer or getgenv().IntScriptName or ""
+                footerText = tostring(footerText)
+
+                --// Strip any embedded rich-text colors so the footer follows the theme
+                footerText = footerText:gsub("<font.->", ""):gsub("</font>", "")
+
+                local AccentHex = Library.Scheme.AccentColor:ToHex()
+                local FontHex = Library.Scheme.FontColor:ToHex()
+
+                --// Only the "Store" word uses the accent color; everything else uses the font color
+                footerText = footerText:gsub(
+                    "Store",
+                    string.format("<font color=\"#%s\">Store</font>", AccentHex)
+                )
+
                 return string.format(
                     "<font color=\"#%s\">%s</font>",
-                    Library.Scheme.AccentColor:ToHex(),
-                    tostring(footerText)
+                    FontHex,
+                    footerText
                 )
             end
         }
