@@ -7038,9 +7038,6 @@ end
             TextColor3 = "FontColor",
             Text = function()
                 local footerText = WindowInfo.Footer or getgenv().IntScriptName or ""
-                if WindowInfo.FooterRichText == true then
-                    return tostring(footerText)
-                end
                 return string.format(
                     "<font color=\"#%s\">%s</font>",
                     Library.Scheme.AccentColor:ToHex(),
