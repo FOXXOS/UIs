@@ -7038,24 +7038,10 @@ end
             TextColor3 = "FontColor",
             Text = function()
                 local footerText = WindowInfo.Footer or getgenv().IntScriptName or ""
-                footerText = tostring(footerText)
-
-                --// Strip any embedded rich-text colors so the footer follows the theme
-                footerText = footerText:gsub("<font.->", ""):gsub("</font>", "")
-
-                local AccentHex = Library.Scheme.AccentColor:ToHex()
-                local FontHex = Library.Scheme.FontColor:ToHex()
-
-                --// Only the "Store" word uses the accent color; everything else uses the font color
-                footerText = footerText:gsub(
-                    "Store",
-                    string.format("<font color=\"#%s\">Store</font>", AccentHex)
-                )
-
                 return string.format(
                     "<font color=\"#%s\">%s</font>",
-                    FontHex,
-                    footerText
+                    Library.Scheme.AccentColor:ToHex(),
+                    tostring(footerText)
                 )
             end
         }
@@ -8702,6 +8688,7 @@ end
         local TabLabel
         local TabIcon
         local TabUnderline
+        local inactiveTabIconColor = Color3.fromRGB(120, 120, 120)
 
         local TabContainer
 
@@ -8883,6 +8870,7 @@ end
             }):Play()
             if TabIcon then
                 TweenService:Create(TabIcon, Library.TweenInfo, {
+                    ImageColor3 = Library.Scheme.AccentColor,
                     ImageTransparency = 0,
                 }):Play()
             end
@@ -8905,6 +8893,7 @@ end
             }):Play()
             if TabIcon then
                 TweenService:Create(TabIcon, Library.TweenInfo, {
+                    ImageColor3 = inactiveTabIconColor,
                     ImageTransparency = 0.5,
                 }):Play()
             end
@@ -8914,6 +8903,12 @@ end
         end
 
         Library.Registry[TabUnderline].BackgroundColor3 = "AccentColor"
+        if TabIcon then
+            Library.Registry[TabIcon] = Library.Registry[TabIcon] or {}
+            Library.Registry[TabIcon].ImageColor3 = function()
+                return Library.ActiveTab == Tab and Library.Scheme.AccentColor or inactiveTabIconColor
+            end
+        end
 
         --// Execution \\--
         if not Library.ActiveTab then
