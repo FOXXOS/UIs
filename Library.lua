@@ -232,7 +232,7 @@ local Templates = {
         Font = Enum.Font.Jura,
         ToggleKeybind = Enum.KeyCode.RightControl,
         MobileButtonsSide = "Left",
-        HideIntellectualIcon = true,
+        HideZalStoreIcon = true,
     },
     Toggle = {
         Text = "Toggle",
@@ -677,7 +677,7 @@ local function EnsureAcrylicModel()
     end
 
     local part = Instance.new("Part")
-    part.Name = "IntellectualAcrylicBlurPart"
+    part.Name = "ZalStoreAcrylicBlurPart"
     part.Color = Color3.new(0, 0, 0)
     part.Material = Enum.Material.Glass
     part.Size = Vector3.new(1, 1, 0)
@@ -781,7 +781,7 @@ local function EnableAcrylicDepthOfField()
 
     if not acrylicDepthOfField or not acrylicDepthOfField.Parent then
         acrylicDepthOfField = Instance.new("DepthOfFieldEffect")
-        acrylicDepthOfField.Name = "IntellectualAcrylicDOF"
+        acrylicDepthOfField.Name = "ZalStoreAcrylicDOF"
         acrylicDepthOfField.FarIntensity = 0
         acrylicDepthOfField.InFocusRadius = 0.1
         acrylicDepthOfField.NearIntensity = 1
@@ -6616,7 +6616,9 @@ function Library:CreateWindow(WindowInfo)
     Library.CornerRadius = WindowInfo.CornerRadius
     Library:SetNotifySide(WindowInfo.NotifySide)
     Library.ShowCustomCursor = WindowInfo.ShowCustomCursor
-    Library.HideIntellectualIcon = WindowInfo.HideIntellectualIcon == true
+    -- Back-compat: accept either HideZalStoreIcon (new) or HideIntellectualIcon (old)
+    Library.HideZalStoreIcon = (WindowInfo.HideZalStoreIcon == true) or (WindowInfo.HideIntellectualIcon == true)
+    Library.HideIntellectualIcon = Library.HideZalStoreIcon
     Library.Scheme.Font = WindowInfo.Font
     Library.ToggleKeybind = WindowInfo.ToggleKeybind
 
@@ -6904,8 +6906,8 @@ end
             if not getgenv().Usesearchbar then
                 SearchBox.Text = ""
             end
-            if Library.RefreshIntellectualIconVisibility then
-                Library.RefreshIntellectualIconVisibility()
+            if Library.RefreshZalStoreIconVisibility then
+                Library.RefreshZalStoreIconVisibility()
             end
         end
 
@@ -7276,7 +7278,7 @@ end
         })
 
         local function ShouldUseCompactHeader()
-            return Library.HideIntellectualIcon and not getgenv().Usesearchbar
+            return Library.HideZalStoreIcon and not getgenv().Usesearchbar
         end
 
         local function RefreshSidebarShellPosition()
@@ -7298,7 +7300,7 @@ end
             end
         end
 
-        local function RefreshIntellectualIconVisibility()
+        local function RefreshZalStoreIconVisibility()
             local showIcon = not Library.HideIntellectualIcon
             local compactHeader = ShouldUseCompactHeader()
             local showTopHeader = showIcon or getgenv().Usesearchbar
@@ -7358,7 +7360,7 @@ end
                 if TabsSidebarDivider then
                     TabsSidebarDivider.Visible = true
                 end
-                RefreshIntellectualIconVisibility()
+                RefreshZalStoreIconVisibility()
                 RefreshSidebarShellPosition()
                 Tabs.Parent = TabsSidebarPanel
                 Tabs.Position = UDim2.fromOffset(0, 0)
@@ -7411,7 +7413,7 @@ end
                 if TabsSidebarDivider then
                     TabsSidebarDivider.Visible = false
                 end
-                RefreshIntellectualIconVisibility()
+                RefreshZalStoreIconVisibility()
                 Tabs.Parent = TabsHeader
             local compactHeader = ShouldUseCompactHeader()
             Tabs.ScrollingDirection = Enum.ScrollingDirection.X
@@ -7491,10 +7493,12 @@ end
         end
 
         Library.RefreshWindowTabsLayout = QueueRefreshTabsNavigation
-        Library.RefreshIntellectualIconVisibility = function()
-            RefreshIntellectualIconVisibility()
+        Library.RefreshZalStoreIconVisibility = function()
+            RefreshZalStoreIconVisibility()
             QueueRefreshTabsNavigation()
         end
+        -- Back-compat alias (old name)
+        Library.RefreshIntellectualIconVisibility = Library.RefreshZalStoreIconVisibility
 
         TabsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(QueueRefreshTabsNavigation)
         Tabs:GetPropertyChangedSignal("AbsoluteSize"):Connect(QueueRefreshTabsNavigation)
