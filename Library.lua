@@ -7037,9 +7037,25 @@ end
         Library.Registry[FooterLabel] = {
             TextColor3 = "FontColor",
             Text = function()
+                local footerText = WindowInfo.Footer or getgenv().IntScriptName or ""
+                footerText = tostring(footerText)
+
+                --// Strip any embedded rich-text colors so the footer follows the theme
+                footerText = footerText:gsub("<font.->", ""):gsub("</font>", "")
+
+                local AccentHex = Library.Scheme.AccentColor:ToHex()
+                local FontHex = Library.Scheme.FontColor:ToHex()
+
+                --// Only the "Store" word uses the accent color; everything else uses the font color
+                footerText = footerText:gsub(
+                    "Store",
+                    string.format("<font color=\"#%s\">Store</font>", AccentHex)
+                )
+
                 return string.format(
-                    "<font color=\"#%s\">Intellectual</font> | " .. getgenv().IntScriptName,
-                    Library.Scheme.AccentColor:ToHex()
+                    "<font color=\"#%s\">%s</font>",
+                    FontHex,
+                    footerText
                 )
             end
         }
