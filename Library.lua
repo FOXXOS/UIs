@@ -232,7 +232,7 @@ local Templates = {
         Font = Enum.Font.Jura,
         ToggleKeybind = Enum.KeyCode.RightControl,
         MobileButtonsSide = "Left",
-        HideIntellectualIcon = true,
+        HideZalStoreIcon = true,
     },
     Toggle = {
         Text = "Toggle",
@@ -677,7 +677,7 @@ local function EnsureAcrylicModel()
     end
 
     local part = Instance.new("Part")
-    part.Name = "IntellectualAcrylicBlurPart"
+    part.Name = "ZalStoreAcrylicBlurPart"
     part.Color = Color3.new(0, 0, 0)
     part.Material = Enum.Material.Glass
     part.Size = Vector3.new(1, 1, 0)
@@ -781,7 +781,7 @@ local function EnableAcrylicDepthOfField()
 
     if not acrylicDepthOfField or not acrylicDepthOfField.Parent then
         acrylicDepthOfField = Instance.new("DepthOfFieldEffect")
-        acrylicDepthOfField.Name = "IntellectualAcrylicDOF"
+        acrylicDepthOfField.Name = "ZalStoreAcrylicDOF"
         acrylicDepthOfField.FarIntensity = 0
         acrylicDepthOfField.InFocusRadius = 0.1
         acrylicDepthOfField.NearIntensity = 1
@@ -6616,7 +6616,9 @@ function Library:CreateWindow(WindowInfo)
     Library.CornerRadius = WindowInfo.CornerRadius
     Library:SetNotifySide(WindowInfo.NotifySide)
     Library.ShowCustomCursor = WindowInfo.ShowCustomCursor
-    Library.HideIntellectualIcon = WindowInfo.HideIntellectualIcon == true
+    -- Back-compat: accept either HideZalStoreIcon (new) or HideIntellectualIcon (old)
+    Library.HideZalStoreIcon = (WindowInfo.HideZalStoreIcon == true) or (WindowInfo.HideIntellectualIcon == true)
+    Library.HideIntellectualIcon = Library.HideZalStoreIcon
     Library.Scheme.Font = WindowInfo.Font
     Library.ToggleKeybind = WindowInfo.ToggleKeybind
 
@@ -6784,67 +6786,69 @@ end
             Parent = TitleHolder,
         })
 
+        --// ZalStore Brand (rewrite)
         if WindowInfo.Icon then
             New("ImageLabel", {
+                Name = "BrandIcon",
+                BackgroundTransparency = 1,
                 Image = tonumber(WindowInfo.Icon) and "rbxassetid://" .. WindowInfo.Icon or WindowInfo.Icon,
                 Size = WindowInfo.IconSize,
                 Parent = TitleHolder,
             })
         end
 
-        local maxTextSize = 20
-        local minTextSize = 12
-        local maxWidth = TitleHolder.AbsoluteSize.X - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 6 or 0) - 12
-        local textSize = maxTextSize
-        local TitleFont = Font.fromEnum(Enum.Font.GothamBold)
-        local PrefixText = "INT"
-        local SuffixText = "ellectual"
-        
-        while Library:GetTextBounds(PrefixText .. SuffixText, TitleFont, textSize, maxWidth) > maxWidth and textSize > minTextSize do
-            textSize = textSize - 1
-        end
-        
-        local PrefixWidth = Library:GetTextBounds(PrefixText, TitleFont, textSize)
-        local SuffixWidth = Library:GetTextBounds(SuffixText, TitleFont, textSize)
-        local TitleFrame = New("Frame", {
+        local BrandFont = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy)
+        local BrandSize = 28
+        local BrandPrefix = "Zal"
+        local BrandSuffix = "Store"
+
+        local PrefixWidth = Library:GetTextBounds(BrandPrefix, BrandFont, BrandSize)
+        local SuffixWidth = Library:GetTextBounds(BrandSuffix, BrandFont, BrandSize)
+
+        local BrandFrame = New("Frame", {
+            Name = "BrandFrame",
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, PrefixWidth + SuffixWidth, 1, 0),
+            Size = UDim2.new(0, PrefixWidth + SuffixWidth + 2, 1, 0),
             Parent = TitleHolder,
         })
         New("UIListLayout", {
             FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
             VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = TitleFrame,
+            Parent = BrandFrame,
         })
 
         New("TextLabel", {
+            Name = "BrandPrefix",
             BackgroundTransparency = 1,
             Size = UDim2.new(0, PrefixWidth, 1, 0),
-            FontFace = TitleFont,
-            Text = PrefixText,
-            TextSize = textSize,
+            FontFace = BrandFont,
+            Text = BrandPrefix,
+            TextSize = BrandSize,
             TextColor3 = "AccentColor",
             TextXAlignment = Enum.TextXAlignment.Right,
-            Parent = TitleFrame,
+            Parent = BrandFrame,
         })
 
         local SuffixHolder = New("Frame", {
+            Name = "BrandSuffixHolder",
             BackgroundTransparency = 1,
             Size = UDim2.new(0, SuffixWidth, 1, 0),
-            Parent = TitleFrame,
+            Parent = BrandFrame,
         })
         New("TextLabel", {
+            Name = "BrandSuffix",
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
-            FontFace = TitleFont,
-            Text = SuffixText,
-            TextSize = textSize,
+            FontFace = BrandFont,
+            Text = BrandSuffix,
+            TextSize = BrandSize,
             TextColor3 = Color3.fromRGB(255, 255, 255),
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = SuffixHolder,
         })
         New("Frame", {
+            Name = "BrandUnderline",
             AnchorPoint = Vector2.new(0.5, 1),
             BackgroundColor3 = "AccentColor",
             BorderSizePixel = 0,
@@ -6904,8 +6908,8 @@ end
             if not getgenv().Usesearchbar then
                 SearchBox.Text = ""
             end
-            if Library.RefreshIntellectualIconVisibility then
-                Library.RefreshIntellectualIconVisibility()
+            if Library.RefreshZalStoreIconVisibility then
+                Library.RefreshZalStoreIconVisibility()
             end
         end
 
@@ -7276,7 +7280,7 @@ end
         })
 
         local function ShouldUseCompactHeader()
-            return Library.HideIntellectualIcon and not getgenv().Usesearchbar
+            return Library.HideZalStoreIcon and not getgenv().Usesearchbar
         end
 
         local function RefreshSidebarShellPosition()
@@ -7298,8 +7302,8 @@ end
             end
         end
 
-        local function RefreshIntellectualIconVisibility()
-            local showIcon = not Library.HideIntellectualIcon
+        local function RefreshZalStoreIconVisibility()
+            local showIcon = not Library.HideZalStoreIcon
             local compactHeader = ShouldUseCompactHeader()
             local showTopHeader = showIcon or getgenv().Usesearchbar
 
@@ -7358,7 +7362,7 @@ end
                 if TabsSidebarDivider then
                     TabsSidebarDivider.Visible = true
                 end
-                RefreshIntellectualIconVisibility()
+                RefreshZalStoreIconVisibility()
                 RefreshSidebarShellPosition()
                 Tabs.Parent = TabsSidebarPanel
                 Tabs.Position = UDim2.fromOffset(0, 0)
@@ -7411,7 +7415,7 @@ end
                 if TabsSidebarDivider then
                     TabsSidebarDivider.Visible = false
                 end
-                RefreshIntellectualIconVisibility()
+                RefreshZalStoreIconVisibility()
                 Tabs.Parent = TabsHeader
             local compactHeader = ShouldUseCompactHeader()
             Tabs.ScrollingDirection = Enum.ScrollingDirection.X
@@ -7491,10 +7495,12 @@ end
         end
 
         Library.RefreshWindowTabsLayout = QueueRefreshTabsNavigation
-        Library.RefreshIntellectualIconVisibility = function()
-            RefreshIntellectualIconVisibility()
+        Library.RefreshZalStoreIconVisibility = function()
+            RefreshZalStoreIconVisibility()
             QueueRefreshTabsNavigation()
         end
+        -- Back-compat alias (old name)
+        Library.RefreshIntellectualIconVisibility = Library.RefreshZalStoreIconVisibility
 
         TabsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(QueueRefreshTabsNavigation)
         Tabs:GetPropertyChangedSignal("AbsoluteSize"):Connect(QueueRefreshTabsNavigation)
